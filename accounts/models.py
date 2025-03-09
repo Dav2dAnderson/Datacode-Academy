@@ -1,10 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils.text import slugify
 
-from .validators import phone_validator
+from .validators import phone_validator, validate_file_extension
 
 
-class MyUser(AbstractUser):
+class CustomRole(models.Model):
     ROLE_CHOICES = [
         ('admin', 'Admin'),
         ('assistant', 'Assistant'),
@@ -12,7 +13,14 @@ class MyUser(AbstractUser):
         ('teacher', 'Teacher')
     ]
 
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
+    name = models.CharField(max_length=100, choices=ROLE_CHOICES)
+
+    def __str__(self):
+        return self.name
+
+
+class MyUser(AbstractUser):
+    role = models.ForeignKey(CustomRole, on_delete=models.CASCADE, null=True, blank=True)
     phone = models.CharField(max_length=13, blank=True, null=True, validators=[phone_validator])
     about = models.TextField(blank=True, null=True)
 
@@ -26,29 +34,36 @@ class MyUser(AbstractUser):
 
 
 class Courses(models.Model):
+    image = models.ImageField(upload_to='course_images/', null=True, blank=True)    
     name = models.CharField(max_length=150, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    slug = models.SlugField(max_length=200, null=True, blank=True, unique=True)
+    created_at = models.DateField(auto_now_add=True)
+    is_active = models.BooleanField(default=False)
 
     assistant = models.ForeignKey(MyUser,
                                   on_delete=models.SET_NULL,
                                   blank=True,
                                   null=True,
                                   related_name='assistant_courses',
-                                  limit_choices_to={'role': 'assistant'})
+                                  )
 
     teacher = models.ForeignKey(MyUser,
                                 on_delete=models.SET_NULL,
                                 null=True,
                                 related_name='teacher_courses',
-                                limit_choices_to={'role': 'teacher'})
+                                )
 
     students = models.ManyToManyField(MyUser,
                                       related_name='student_courses',
-                                      limit_choices_to={'role': 'student'},
                                       blank=True)
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        return super().save(*args, **kwargs)
 
     class Meta:
         ordering = ['name']
@@ -57,16 +72,23 @@ class Courses(models.Model):
 
 
 class Modules(models.Model):
+    file = models.FileField(upload_to='module_images/', validators=[validate_file_extension], null=True, blank=True)
     name = models.CharField(max_length=150)
+    slug = models.SlugField(max_length=200, null=True, blank=True, unique=True)
     description = models.TextField(blank=True, null=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateField(auto_now=True)
 
     course = models.ForeignKey(Courses, on_delete=models.CASCADE, related_name="modules")
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        return super().save(*args, **kwargs)
 
     class Meta:
         ordering = ['name']
@@ -76,6 +98,7 @@ class Modules(models.Model):
 
 class Lessons(models.Model):
     title = models.CharField(max_length=150)
+    slug = models.SlugField(max_length=200, null=True, blank=True, unique=True)
     description = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -87,6 +110,11 @@ class Lessons(models.Model):
     def __str__(self):
         return self.title
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        return super().save(*args, **kwargs)
+
     class Meta:
         ordering = ['title']
         verbose_name = "Lesson "
@@ -94,7 +122,7 @@ class Lessons(models.Model):
 
 
 class LessonFile(models.Model):
-    file = models.FileField(upload_to='lessons/')
+    file = models.FileField(upload_to='lessons/', validators=[validate_file_extension])
     lesson = models.ForeignKey(Lessons, on_delete=models.CASCADE, related_name='lesson_files')
 
     def __str__(self):
