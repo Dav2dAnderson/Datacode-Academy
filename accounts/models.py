@@ -20,7 +20,7 @@ class CustomRole(models.Model):
 
 
 class MyUser(AbstractUser):
-    role = models.ForeignKey(CustomRole, on_delete=models.CASCADE, null=True, blank=True)
+    role = models.ForeignKey(CustomRole, on_delete=models.SET_NULL, null=True, blank=True)
     phone = models.CharField(max_length=13, blank=True, null=True, validators=[phone_validator])
     about = models.TextField(blank=True, null=True)
 

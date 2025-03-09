@@ -9,6 +9,7 @@ class CourseListSerializer(serializers.ModelSerializer):
         fields = ['id', 'image', 'name', 'slug', 'is_active']
         read_only_fields = ['slug']
 
+
 class CourseRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Courses
@@ -24,6 +25,7 @@ class ModulesListSerializer(serializers.ModelSerializer):
 
 class ModuleRetrieveSerializer(serializers.ModelSerializer):
     lessons = serializers.SerializerMethodField()
+
     class Meta:
         model = Modules
         fields = ['id', 'file', 'name', 'description', 'created_at', 'updated_at', 'course', 'lessons']
@@ -31,8 +33,8 @@ class ModuleRetrieveSerializer(serializers.ModelSerializer):
     def get_lessons(self, obj):
         lessons = obj.lessons.all()
         return LessonsListSerializer(lessons, many=True).data
-    
-    
+
+
 class LessonsListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lessons
@@ -41,18 +43,15 @@ class LessonsListSerializer(serializers.ModelSerializer):
 
 class LessonRetrieveSerializer(serializers.ModelSerializer):
     module_name = serializers.CharField(source='module.name', read_only=True)
+
     class Meta:
         model = Lessons
         fields = ['id', 'title', 'description', 'created_at', 'updated_at', 'module', 'module_name']
 
 
-
-
 class LessonFilesSerializer(serializers.ModelSerializer):
     lesson_title = serializers.CharField(source='lesson.title', read_only=True)
+
     class Meta:
-        model = LessonFile 
+        model = LessonFile
         fields = ['id', 'lesson', 'lesson_title', 'file']
-
- 
-

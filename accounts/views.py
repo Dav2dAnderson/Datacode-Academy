@@ -1,11 +1,8 @@
-from django.shortcuts import render
-
 from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 
 from .models import MyUser
 from .serializers import CustomUserSerializer
-# Create your views here.
 
 
 class UserRegistrationViewSet(viewsets.ModelViewSet):
