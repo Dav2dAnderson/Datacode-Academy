@@ -1,7 +1,6 @@
 from django.db import models
 
 from accounts.models import MyUser
-# Create your models here.
 
 
 class Article(models.Model):

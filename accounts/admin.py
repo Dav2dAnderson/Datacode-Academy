@@ -18,6 +18,9 @@ class CoursesAdmin(admin.ModelAdmin):
     list_display = ['name', 'created_at', 'assistant', 'teacher', 'is_active']
     list_filter = ['name', 'is_active', 'teacher']
     search_fields = ['name', 'is_active', 'teacher', 'created_at']
+    prepopulated_fields = {
+        'slug': ('name',)
+    }
 
 
 @admin.register(Modules)
