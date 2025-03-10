@@ -23,6 +23,7 @@ class MyUser(AbstractUser):
     role = models.ForeignKey(CustomRole, on_delete=models.SET_NULL, null=True, blank=True)
     phone = models.CharField(max_length=13, blank=True, null=True, validators=[phone_validator])
     about = models.TextField(blank=True, null=True)
+    courses = models.ManyToManyField('Courses', related_name='courses')
 
     def __str__(self):
         return self.username
@@ -37,6 +38,7 @@ class Courses(models.Model):
     image = models.ImageField(upload_to='course_images/', null=True, blank=True)    
     name = models.CharField(max_length=150, unique=True)
     slug = models.SlugField(max_length=200, null=True, blank=True, unique=True)
+    price = models.PositiveIntegerField(default=0)
     created_at = models.DateField(auto_now_add=True)
     is_active = models.BooleanField(default=False)
 
@@ -52,10 +54,6 @@ class Courses(models.Model):
                                 null=True,
                                 related_name='teacher_courses',
                                 )
-
-    students = models.ManyToManyField(MyUser,
-                                      related_name='student_courses',
-                                      blank=True)
 
     def __str__(self):
         return self.name
