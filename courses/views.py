@@ -1,6 +1,8 @@
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, permissions, filters, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from accounts.models import Courses, Modules, LessonFile, Lessons
 from accounts.permissions import IsTeacherOrAdminUser, IsStudent, IsAdminOrReadOnly
@@ -8,13 +10,12 @@ from .serializers import (CourseListSerializer, CourseRetrieveSerializer, Module
                           ModuleRetrieveSerializer, LessonsListSerializer, LessonRetrieveSerializer,
                           LessonFilesSerializer)
 
+
 """Course-lar uchun View"""
-
-
 class CoursesViewSet(viewsets.ModelViewSet):
     queryset = Courses.objects.all()
     serializer_class = CourseListSerializer
-    lookup_field = "slug"
+    lookup_field = "slug"   
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
@@ -34,8 +35,6 @@ class CoursesViewSet(viewsets.ModelViewSet):
 
 
 """Module-lar uchun View"""
-
-
 class ModulesViewSet(viewsets.ModelViewSet):
     queryset = Modules.objects.all()
     lookup_field = 'slug'
@@ -53,8 +52,6 @@ class ModulesViewSet(viewsets.ModelViewSet):
 
 
 """Lesson-lar uchun ViewSet"""
-
-
 class LessonsViewSet(viewsets.ModelViewSet):
     queryset = Lessons.objects.all()
     lookup_field = 'slug'
@@ -73,8 +70,6 @@ class LessonsViewSet(viewsets.ModelViewSet):
 
 
 """Lesson file-lari uchun View"""
-
-
 class LessonFilesViewSet(viewsets.ModelViewSet):
     queryset = LessonFile.objects.all()
     serializer_class = LessonFilesSerializer

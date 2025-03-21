@@ -3,6 +3,8 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 
+from courses.serializers import CourseListSerializer
+
 from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
@@ -49,3 +51,10 @@ class CustomUserLoginSerializer(serializers.ModelSerializer):
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         }
+    
+
+class CustomUserProfileSerializer(serializers.ModelSerializer):
+    courses = CourseListSerializer(many=True, read_only=True)
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'phone', 'role', 'courses']
