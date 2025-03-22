@@ -2,6 +2,8 @@ from rest_framework import serializers
 
 from accounts.models import Courses, Lessons, LessonFile, Modules
 
+from .models import Article, Comment
+
 
 class CourseListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -55,3 +57,16 @@ class LessonFilesSerializer(serializers.ModelSerializer):
     class Meta:
         model = LessonFile
         fields = ['id', 'lesson', 'lesson_title', 'file']
+
+
+class ArticleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Article
+        fields = ['id', 'author', 'title', 'content', 'image', 'created_at', 'updated_at']
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['id', 'author', 'article', 'content']
+        read_only_fields = ['author']

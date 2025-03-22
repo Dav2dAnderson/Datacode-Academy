@@ -8,15 +8,16 @@ from accounts.models import Courses, Modules, LessonFile, Lessons
 from accounts.permissions import IsTeacherOrAdminUser, IsStudent, IsAdminOrReadOnly
 from .serializers import (CourseListSerializer, CourseRetrieveSerializer, ModulesListSerializer,
                           ModuleRetrieveSerializer, LessonsListSerializer, LessonRetrieveSerializer,
-                          LessonFilesSerializer)
+                          LessonFilesSerializer, ArticleSerializer, CommentSerializer)
 
+from .models import Article, Comment
 
 """Course-lar uchun View"""
 class CoursesViewSet(viewsets.ModelViewSet):
     queryset = Courses.objects.all()
     serializer_class = CourseListSerializer
     lookup_field = "slug"   
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly | permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
     filterset_fields = ['created_at']
@@ -38,7 +39,7 @@ class CoursesViewSet(viewsets.ModelViewSet):
 class ModulesViewSet(viewsets.ModelViewSet):
     queryset = Modules.objects.all()
     lookup_field = 'slug'
-    permission_classes = [permissions.IsAuthenticated, IsTeacherOrAdminUser]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsTeacherOrAdminUser]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
     filterset_fields = ['course', 'created_at']
@@ -77,3 +78,38 @@ class LessonFilesViewSet(viewsets.ModelViewSet):
 
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['lesson']
+
+
+
+"""Article va Comment-lar uchun View"""
+class ArticleViewSet(viewsets.ModelViewSet):
+    queryset = Article.objects.all()
+    serializer_class = ArticleSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['title']
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    # queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        return Comment.objects.all()
+    
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+    
+    def perform_update(self, serializer):
+        if self.request.user == serializer.instance.author:
+            serializer.save()
+        else:
+            self.permission_denied(self.request, message="Siz faqatgina o'z koment-laringizni tahrirlay olasiz.")
+
+    def perform_destroy(self, instance):
+        if self.request.user == instance.author:
+            instance.delete()
+        else:
+            self.permission_denied(self.request, message="Siz faqat o'z koment-laringizni o'chira olasiz.")

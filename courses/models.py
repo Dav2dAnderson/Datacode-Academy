@@ -22,3 +22,12 @@ class Article(models.Model):
         return super().save(*args, **kwargs)
     
 
+class Comment(models.Model):
+    author = models.ForeignKey(MyUser, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    content = models.TextField()
+
+    def __str__(self):
+        return self.author.username
+    
+
