@@ -23,7 +23,8 @@ class MyUser(AbstractUser):
     role = models.ForeignKey(CustomRole, on_delete=models.SET_NULL, null=True, blank=True)
     phone = models.CharField(max_length=13, blank=True, null=True, validators=[phone_validator])
     about = models.TextField(blank=True, null=True)
-    courses = models.ManyToManyField('Courses', related_name='courses')
+    courses = models.ManyToManyField('Courses', related_name='courses', blank=True)
+    muted = models.BooleanField(default=False)
 
     def __str__(self):
         return self.username

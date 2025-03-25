@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from accounts.models import Courses, Lessons, LessonFile, Modules
 
-from .models import Article, Comment
+from .models import Article, Comment, Notification
 
 
 class CourseListSerializer(serializers.ModelSerializer):
@@ -60,13 +60,34 @@ class LessonFilesSerializer(serializers.ModelSerializer):
 
 
 class ArticleSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source='author.username')
     class Meta:
         model = Article
-        fields = ['id', 'author', 'title', 'content', 'image', 'created_at', 'updated_at']
+        fields = ['id', 'author', 'author_name','title', 'content', 'image', 'created_at', 'updated_at']
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source='author.username')
+    article_name = serializers.CharField(source='article.title')
+
     class Meta:
         model = Comment
-        fields = ['id', 'author', 'article', 'content']
-        read_only_fields = ['author']
+        fields = ['id', 'author', 'author_name', 'article_name', 'article', 'content']
+        read_only_fields = ['author', 'author_name', 'article_name']
+
+
+class NotificationListSerializer(serializers.ModelSerializer):
+    to_name = serializers.CharField(source='to.username')
+    class Meta:
+        model = Notification
+        fields = ['id', 'to', 'to_name', 'content']
+
+
+class NotificationRetrieveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['id', 'to', 'banner', 'content', 'is_read', 'sent_at']
+    
+
+
+    

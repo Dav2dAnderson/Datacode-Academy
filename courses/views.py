@@ -8,9 +8,10 @@ from accounts.models import Courses, Modules, LessonFile, Lessons
 from accounts.permissions import IsTeacherOrAdminUser, IsStudent, IsAdminOrReadOnly
 from .serializers import (CourseListSerializer, CourseRetrieveSerializer, ModulesListSerializer,
                           ModuleRetrieveSerializer, LessonsListSerializer, LessonRetrieveSerializer,
-                          LessonFilesSerializer, ArticleSerializer, CommentSerializer)
+                          LessonFilesSerializer, ArticleSerializer, CommentSerializer, 
+                          NotificationListSerializer, NotificationRetrieveSerializer)
 
-from .models import Article, Comment
+from .models import Article, Comment, Notification
 
 """Course-lar uchun View"""
 class CoursesViewSet(viewsets.ModelViewSet):
@@ -91,6 +92,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
     search_fields = ['title']
 
 
+"""Koment-lar uchun ViewSet"""
 class CommentViewSet(viewsets.ModelViewSet):
     # queryset = Comment.objects.all()
     serializer_class = CommentSerializer
@@ -113,3 +115,21 @@ class CommentViewSet(viewsets.ModelViewSet):
             instance.delete()
         else:
             self.permission_denied(self.request, message="Siz faqat o'z koment-laringizni o'chira olasiz.")
+
+
+"""Notification-lar uchun ViewSet"""
+class NotificationViewSet(viewsets.ModelViewSet):
+    queryset = Notification.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return Notification.objects.all()
+        return user.notifications.all()
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return NotificationListSerializer
+        else:
+            return NotificationRetrieveSerializer

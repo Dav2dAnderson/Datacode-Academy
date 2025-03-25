@@ -31,3 +31,13 @@ class Comment(models.Model):
         return self.author.username
     
 
+class Notification(models.Model):
+    banner = models.ImageField(upload_to='notification_banner/', null=True, blank=True)
+    to = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='notifications')
+    content = models.TextField()
+    is_read = models.BooleanField(default=False)
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.to.username
+    
