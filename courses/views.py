@@ -92,6 +92,9 @@ class ArticleViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['title']
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
 
 """Koment-lar uchun ViewSet"""
 class CommentViewSet(viewsets.ModelViewSet):
