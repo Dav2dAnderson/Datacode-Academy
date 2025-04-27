@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 
 from .models import MyUser, Courses
 from .serializers import CustomUserSerializer, CustomUserLoginSerializer, CustomUserProfileSerializer
+from .tasks import welcome_text_email, notify_about_updates
 
 
 """Ro'yxatdan o'tish"""
@@ -16,7 +17,8 @@ class UserRegistrationViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            user = serializer.save()
+            welcome_text_email.delay(user.email, user.username)
             return Response({'message': "Foydalanuvchi muvaffaqiyatli yaratildi.", "user": serializer.data}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -46,6 +48,7 @@ class UserCourseViewSet(viewsets.ModelViewSet):
         
         if course not in user.courses.all():
             user.courses.add(course)
+            notify_about_updates.delay(to=user.id, content=f"Siz {course} kursiga muvaffaqiyatli qo'shildingiz.")
             return Response({'message': "Siz kurs-ga muvaffaqiyatli yozildingiz."}, status=status.HTTP_200_OK)
         return Response({'message': "Siz allaqachon bu kurs-ga yozilgansiz."})
     
@@ -73,3 +76,5 @@ class UserProfileViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         return Response({'error': "POST amaliga ruhsat berilmagan."}, status=400)
     
+
+

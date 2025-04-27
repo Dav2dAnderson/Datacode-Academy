@@ -3,6 +3,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
 
 from accounts.models import Courses, Modules, LessonFile, Lessons
 from accounts.permissions import IsTeacherOrAdminUser, IsStudent, IsAdminOrReadOnly
@@ -133,3 +134,8 @@ class NotificationViewSet(viewsets.ModelViewSet):
             return NotificationListSerializer
         else:
             return NotificationRetrieveSerializer
+        
+    def create(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise PermissionDenied("Sizda bu amalni bajarishga ruxsat yo'q")
+        return super().save(request, *args, **kwargs)
